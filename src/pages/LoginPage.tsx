@@ -199,9 +199,49 @@ export function LoginPage() {
       {/* 左侧品牌展示区 */}
       <div className={styles.brandPanel}>
         <div className={styles.brandContent}>
-          <span className={styles.brandWord}>CLI</span>
-          <span className={styles.brandWord}>PROXY</span>
-          <span className={styles.brandWord}>API</span>
+          <nav className={styles.landingNav} aria-label="CLIProxyAPI landing navigation">
+            <div className={styles.brandMark}>
+              <span className={styles.brandIcon}>✣</span>
+              <span>CLIProxyAPI</span>
+            </div>
+            <div className={styles.navLinks}>
+              <span>Solutions</span>
+              <span>Documentation</span>
+              <span>Pricing</span>
+              <span>Login</span>
+              <span className={styles.navCta}>Get Started</span>
+            </div>
+          </nav>
+
+          <div className={styles.heroBlock}>
+            <div>
+              <div className={styles.statusPill}>
+                <span className={styles.statusDot} /> SYSTEM OPERATIONAL
+              </div>
+              <h1 className={styles.heroTitle}>
+                The Backbone of
+                <span className={styles.heroAccent}>AI Infrastructure</span>
+              </h1>
+              <p className={styles.heroCopy}>
+                Enterprise-grade large model API relay. Unify your AI stack with high-speed,
+                stable access to leading LLMs through a single proxy interface.
+              </p>
+              <div className={styles.heroActions}>
+                <button className={styles.primaryAction} type="button">Start Integration →</button>
+                <button className={styles.secondaryAction} type="button">▧ View Documentation</button>
+              </div>
+              <div className={styles.modelRail}>
+                <div className={styles.railLabel}>POWERING NEXT-GEN APPLICATIONS</div>
+                <div className={styles.modelChips}>
+                  <span>GPT 5.2</span>
+                  <span>Claude 4.5</span>
+                  <span>Gemini 3</span>
+                  <span>Qwen 3</span>
+                  <span>GLM 4.7</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

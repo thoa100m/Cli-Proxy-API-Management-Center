@@ -5,80 +5,43 @@ import { IconKey, IconBot, IconFileText, IconSatellite } from '@/components/ui/i
 import { useAuthStore, useConfigStore, useModelsStore } from '@/stores';
 import { authFilesApi } from '@/services/api';
 import { useApiKeysForModels } from '@/hooks/useApiKeysForModels';
-import { formatDateValue } from '@/utils/format';
 import styles from './DashboardPage.module.scss';
 
-interface QuickStat {
+interface MetricCard {
   label: string;
-  value: number | string;
+  value: string;
+  delta: string;
+  tone: 'blue' | 'violet' | 'green' | 'orange';
   icon: React.ReactNode;
-  path: string;
-  loading?: boolean;
-  sublabel?: string;
-}
-
-type TimeOfDay = 'morning' | 'afternoon' | 'evening' | 'night';
-
-function getTimeOfDay(): TimeOfDay {
-  const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) return 'morning';
-  if (hour >= 12 && hour < 17) return 'afternoon';
-  if (hour >= 17 && hour < 21) return 'evening';
-  return 'night';
 }
 
 export function DashboardPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const connectionStatus = useAuthStore((state) => state.connectionStatus);
   const serverVersion = useAuthStore((state) => state.serverVersion);
-  const serverBuildDate = useAuthStore((state) => state.serverBuildDate);
   const apiBase = useAuthStore((state) => state.apiBase);
   const config = useConfigStore((state) => state.config);
   const fetchConfig = useConfigStore((state) => state.fetchConfig);
-
   const models = useModelsStore((state) => state.models);
   const modelsLoading = useModelsStore((state) => state.loading);
   const fetchModelsFromStore = useModelsStore((state) => state.fetchModels);
-
   const [authFilesCount, setAuthFilesCount] = useState<number | null>(null);
   const [authFilesLoading, setAuthFilesLoading] = useState(false);
-
-  // Time-of-day state for dynamic greeting
-  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(getTimeOfDay);
-  const [currentTime, setCurrentTime] = useState(() => new Date());
-
-  // Update time every 60 seconds
-  useEffect(() => {
-    const id = setInterval(() => {
-      setTimeOfDay(getTimeOfDay());
-      setCurrentTime(new Date());
-    }, 60_000);
-    return () => clearInterval(id);
-  }, []);
-
   const resolveApiKeysForModels = useApiKeysForModels();
 
   const fetchModels = useCallback(async () => {
-    if (connectionStatus !== 'connected' || !apiBase) {
-      return;
-    }
-
+    if (connectionStatus !== 'connected' || !apiBase) return;
     try {
       const apiKeys = await resolveApiKeysForModels();
-      const primaryKey = apiKeys[0];
-      await fetchModelsFromStore(apiBase, primaryKey);
+      await fetchModelsFromStore(apiBase, apiKeys[0]);
     } catch {
-      // Ignore model fetch errors on dashboard
+      // Keep dashboard available when model discovery is unavailable.
     }
   }, [connectionStatus, apiBase, resolveApiKeysForModels, fetchModelsFromStore]);
 
   useEffect(() => {
-    if (connectionStatus !== 'connected') {
-      return;
-    }
-
+    if (connectionStatus !== 'connected') return;
     let cancelled = false;
-
     const loadAuthFiles = async () => {
       setAuthFilesLoading(true);
       try {
@@ -87,21 +50,17 @@ export function DashboardPage() {
       } catch {
         if (!cancelled) setAuthFilesCount(null);
       } finally {
-        setAuthFilesLoading(false);
+        if (!cancelled) setAuthFilesLoading(false);
       }
     };
-
-    // 提供商/密钥统计直接来自 config store；这里只需保证配置已加载并取认证文件数。
     fetchConfig().catch(() => undefined);
     fetchModels();
     void loadAuthFiles();
-
     return () => {
       cancelled = true;
     };
   }, [connectionStatus, fetchConfig, fetchModels]);
 
-  const configLoading = !config;
   const providerStats = config
     ? {
         gemini: config.geminiApiKeys?.length ?? 0,
@@ -114,215 +73,94 @@ export function DashboardPage() {
   const totalProviderKeys = providerStats
     ? Object.values(providerStats).reduce((sum, count) => sum + count, 0)
     : 0;
+  const managementKeys = config?.apiKeys?.length ?? 0;
+  const activeCredentials = authFilesCount ?? 0;
 
-  const quickStats: QuickStat[] = [
-    {
-      label: t('dashboard.management_keys'),
-      value: config ? (config.apiKeys?.length ?? 0) : '-',
-      icon: <IconKey size={24} />,
-      path: '/config',
-      loading: configLoading,
-      sublabel: t('nav.config_management'),
-    },
-    {
-      label: t('nav.ai_providers'),
-      value: providerStats ? totalProviderKeys : '-',
-      icon: <IconBot size={24} />,
-      path: '/ai-providers',
-      loading: configLoading,
-      sublabel: providerStats
-        ? t('dashboard.provider_keys_detail', {
-            gemini: providerStats.gemini,
-            codex: providerStats.codex,
-            claude: providerStats.claude,
-            vertex: providerStats.vertex,
-            openai: providerStats.openai,
-          })
-        : undefined,
-    },
-    {
-      label: t('nav.auth_files'),
-      value: authFilesCount ?? '-',
-      icon: <IconFileText size={24} />,
-      path: '/auth-files',
-      loading: authFilesLoading && authFilesCount === null,
-      sublabel: t('dashboard.oauth_credentials'),
-    },
-    {
-      label: t('dashboard.available_models'),
-      value: modelsLoading ? '-' : models.length,
-      icon: <IconSatellite size={24} />,
-      path: '/system',
-      loading: modelsLoading,
-      sublabel: t('dashboard.available_models_desc'),
-    },
+  const metrics: MetricCard[] = [
+    { label: 'Total Requests', value: '0', delta: '→ +0.0%', tone: 'blue', icon: <IconKey size={20} /> },
+    { label: 'Avg Tokens', value: '0', delta: '→ +0.0%', tone: 'violet', icon: <IconBot size={20} /> },
+    { label: 'Success Rate', value: '100.00%', delta: '→ +0.0%', tone: 'green', icon: <IconSatellite size={20} /> },
+    { label: 'MTD Cost', value: '$0.00', delta: '→ +0.0%', tone: 'orange', icon: <IconFileText size={20} /> },
   ];
 
-  const routingStrategyRaw = config?.routingStrategy?.trim() || '';
-  const routingStrategyDisplay = !routingStrategyRaw
-    ? '-'
-    : routingStrategyRaw === 'round-robin'
-      ? t('basic_settings.routing_strategy_round_robin')
-      : routingStrategyRaw === 'fill-first'
-        ? t('basic_settings.routing_strategy_fill_first')
-        : routingStrategyRaw;
-  const routingStrategyBadgeClass = !routingStrategyRaw
-    ? styles.configBadgeUnknown
-    : routingStrategyRaw === 'round-robin'
-      ? styles.configBadgeRoundRobin
-      : routingStrategyRaw === 'fill-first'
-        ? styles.configBadgeFillFirst
-        : styles.configBadgeUnknown;
-
-  // Derived time-based values
-  const greetingKey = `dashboard.greeting_${timeOfDay}`;
-  const caringKey = `dashboard.caring_${timeOfDay}`;
-
-  const formattedDate = currentTime.toLocaleDateString(i18n.language, {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-
-  const formattedTime = currentTime.toLocaleTimeString(i18n.language, {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-  const serverBuildDateDisplay = formatDateValue(serverBuildDate, i18n.language);
+  const quickLinks = [
+    { label: t('nav.config_management'), value: managementKeys, to: '/config' },
+    { label: t('nav.ai_providers'), value: totalProviderKeys, to: '/ai-providers' },
+    { label: t('nav.auth_files'), value: authFilesLoading ? '...' : activeCredentials, to: '/auth-files' },
+    { label: t('dashboard.available_models'), value: modelsLoading ? '...' : models.length, to: '/system' },
+  ];
 
   return (
-    <div className={styles.dashboard}>
-      {/* Decorative background orbs */}
-      <div className={styles.backgroundOrbs} aria-hidden="true">
-        <div className={styles.orb1} />
-        <div className={styles.orb2} />
-      </div>
-
-      {/* Hero welcome section */}
-      <section className={styles.hero}>
-        <span className={styles.heroWatermark} aria-hidden="true">
-          OVERVIEW
-        </span>
-        <div className={styles.heroContent}>
-          <span className={styles.heroGreeting}>{t(greetingKey)}</span>
-          <h1 className={styles.heroTitle}>{t('dashboard.welcome_back')}</h1>
-          <p className={styles.heroCaring}>{t(caringKey)}</p>
+    <div className={styles.dashboardShell}>
+      <section className={styles.headerBlock}>
+        <div>
+          <h1>Dashboard Overview</h1>
+          <p>Real-time insights into your API infrastructure.</p>
         </div>
-        <div className={styles.heroMeta}>
-          <div className={styles.dateTimeBlock}>
-            <span className={styles.time}>{formattedTime}</span>
-            <span className={styles.date}>{formattedDate}</span>
-          </div>
-          <div className={styles.connectionPill}>
-            <span
-              className={`${styles.statusDot} ${
-                connectionStatus === 'connected'
-                  ? styles.connected
-                  : connectionStatus === 'connecting'
-                    ? styles.connecting
-                    : styles.disconnected
-              }`}
-            />
-            <span className={styles.pillText}>
-              {serverVersion
-                ? `v${serverVersion.trim().replace(/^[vV]+/, '')}`
-                : t(
-                    connectionStatus === 'connected'
-                      ? 'common.connected'
-                      : connectionStatus === 'connecting'
-                        ? 'common.connecting'
-                        : 'common.disconnected'
-                  )}
-            </span>
-          </div>
-          {serverBuildDateDisplay && (
-            <span className={styles.buildDate}>{serverBuildDateDisplay}</span>
-          )}
+        <div className={styles.headerActions}>
+          <span className={styles.versionPill}>{serverVersion ? `v${serverVersion}` : 'System'}</span>
+          <span className={`${styles.statusPill} ${connectionStatus === 'connected' ? styles.online : ''}`}>
+            {connectionStatus === 'connected' ? 'Online' : 'Offline'}
+          </span>
         </div>
       </section>
 
-      {/* Bento stats grid */}
-      <section className={styles.statsSection}>
-        <h2 className={styles.sectionHeading}>{t('dashboard.system_overview')}</h2>
-        <div className={styles.bentoGrid}>
-          {quickStats.map((stat, index) => (
-            <Link
-              key={stat.path}
-              to={stat.path}
-              className={`${styles.bentoCard} ${index === 0 ? styles.bentoLarge : ''}`}
-              style={{ animationDelay: `${index * 80}ms` }}
-            >
-              <div className={styles.bentoIcon}>{stat.icon}</div>
-              <div className={styles.bentoContent}>
-                <span className={styles.bentoValue}>{stat.loading ? '...' : stat.value}</span>
-                <span className={styles.bentoLabel}>{stat.label}</span>
-                {stat.sublabel && !stat.loading && (
-                  <span className={styles.bentoSublabel}>{stat.sublabel}</span>
-                )}
-              </div>
-            </Link>
-          ))}
-        </div>
+      <section className={styles.metricGrid}>
+        {metrics.map((metric) => (
+          <article key={metric.label} className={styles.metricCard}>
+            <div className={`${styles.metricIcon} ${styles[metric.tone]}`}>{metric.icon}</div>
+            <span className={styles.metricDelta}>{metric.delta}</span>
+            <span className={styles.metricLabel}>{metric.label}</span>
+            <strong>{metric.value}</strong>
+          </article>
+        ))}
       </section>
 
-      {/* Config pills section */}
-      {config && (
-        <section className={styles.configSection}>
-          <h2 className={styles.sectionHeading}>{t('dashboard.current_config')}</h2>
-          <div className={styles.configPillGrid}>
-            <div className={styles.configPill}>
-              <span className={styles.configPillLabel}>{t('basic_settings.debug_enable')}</span>
-              <span
-                className={`${styles.configPillValue} ${config.debug ? styles.on : styles.off}`}
-              >
-                {config.debug ? t('common.yes') : t('common.no')}
-              </span>
+      <section className={styles.analyticsGrid}>
+        <article className={styles.trafficPanel}>
+          <div className={styles.panelHeader}>
+            <div>
+              <h2>Traffic Volume</h2>
+              <p>Requests per hour over time</p>
             </div>
-            <div className={styles.configPill}>
-              <span className={styles.configPillLabel}>
-                {t('basic_settings.logging_to_file_enable')}
-              </span>
-              <span
-                className={`${styles.configPillValue} ${config.loggingToFile ? styles.on : styles.off}`}
-              >
-                {config.loggingToFile ? t('common.yes') : t('common.no')}
-              </span>
-            </div>
-            <div className={styles.configPill}>
-              <span className={styles.configPillLabel}>
-                {t('basic_settings.retry_count_label')}
-              </span>
-              <span className={styles.configPillValue}>{config.requestRetry ?? 0}</span>
-            </div>
-            <div className={styles.configPill}>
-              <span className={styles.configPillLabel}>{t('basic_settings.ws_auth_enable')}</span>
-              <span
-                className={`${styles.configPillValue} ${config.wsAuth ? styles.on : styles.off}`}
-              >
-                {config.wsAuth ? t('common.yes') : t('common.no')}
-              </span>
-            </div>
-            <div className={styles.configPill}>
-              <span className={styles.configPillLabel}>{t('dashboard.routing_strategy')}</span>
-              <span className={`${styles.configBadge} ${routingStrategyBadgeClass}`}>
-                {routingStrategyDisplay}
-              </span>
-            </div>
-            {config.proxyUrl && (
-              <div className={`${styles.configPill} ${styles.configPillWide}`}>
-                <span className={styles.configPillLabel}>
-                  {t('basic_settings.proxy_url_label')}
-                </span>
-                <span className={styles.configPillMono}>{config.proxyUrl}</span>
-              </div>
-            )}
+            <div className={styles.segmented}><span>Vol</span><span>Err</span></div>
           </div>
-          <Link to="/config" className={styles.viewMoreLink}>
-            {t('dashboard.edit_settings')} →
+          <div className={styles.chartArea}>
+            <div className={styles.gridLines} />
+            <div className={styles.flatLine} />
+            <div className={styles.timeAxis}>
+              <span>00:00</span><span>04:00</span><span>08:00</span><span>12:00</span><span>16:00</span><span>20:00</span>
+            </div>
+          </div>
+        </article>
+
+        <article className={styles.costPanel}>
+          <h2>Cost Distribution</h2>
+          <p>No cost data available</p>
+        </article>
+      </section>
+
+      <section className={styles.linksGrid}>
+        {quickLinks.map((item) => (
+          <Link to={item.to} className={styles.linkCard} key={item.to}>
+            <span>{item.label}</span>
+            <strong>{item.value}</strong>
           </Link>
-        </section>
-      )}
+        ))}
+      </section>
+
+      <section className={styles.recentPanel}>
+        <div className={styles.panelHeader}>
+          <h2>Recent Requests</h2>
+          <Link to="/logs">View All Logs →</Link>
+        </div>
+        <div className={styles.tableShell}>
+          <div className={styles.tableHead}>
+            <span>Status</span><span>Timestamp</span><span>Method</span><span>Model</span><span>Tokens</span><span>Cost</span>
+          </div>
+          <div className={styles.emptyState}>No recent request data yet.</div>
+        </div>
+      </section>
     </div>
   );
 }

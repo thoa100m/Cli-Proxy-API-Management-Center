@@ -1,567 +1,285 @@
-@use 'sass:color';
 @use '../styles/variables.scss' as *;
 
-// ─── Container ──────────────────────────────────────────
-
-.dashboard {
+.dashboardShell {
+  min-height: calc(100vh - 72px);
   display: flex;
   flex-direction: column;
-  gap: $spacing-xl;
-  max-width: 1000px;
-  margin: 0 auto;
-  position: relative;
+  gap: 22px;
+  padding: 4px;
+  color: #f8fafc;
 }
 
-// ─── Decorative Background Orbs ─────────────────────────
-
-.backgroundOrbs {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-  opacity: 0.42;
-  filter: blur(16px);
-}
-
-.orb1 {
-  position: absolute;
-  width: 420px;
-  height: 420px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--primary-color) 6%, transparent),
-    transparent 70%
-  );
-  top: -140px;
-  right: -80px;
-  animation: orbFloat 22s ease-in-out infinite alternate;
-}
-
-.orb2 {
-  position: absolute;
-  width: 320px;
-  height: 320px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--success-color) 4%, transparent),
-    transparent 70%
-  );
-  bottom: 18%;
-  left: -100px;
-  animation: orbFloat 28s ease-in-out infinite alternate-reverse;
-}
-
-@keyframes orbFloat {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  100% {
-    transform: translate(30px, -20px) scale(1.1);
-  }
-}
-
-// ─── Hero Welcome Section ───────────────────────────────
-
-.hero {
-  position: relative;
-  z-index: 1;
+.headerBlock {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: $spacing-lg;
-  padding: $spacing-2xl $spacing-xl;
-  border-radius: $radius-lg;
-  --glass-blur: 12px;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--bg-primary) 92%, transparent),
-    color-mix(in srgb, var(--bg-secondary) 80%, transparent)
-  );
-  border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
-  backdrop-filter: var(--glass-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-backdrop-filter);
-  overflow: hidden;
-  animation: heroEnter 0.6s ease-out both;
+  gap: 18px;
+  padding: 8px 2px 14px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
 
-  @media (max-width: $breakpoint-mobile) {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: $spacing-xl $spacing-lg;
+  h1 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.2;
+    font-weight: 950;
+    letter-spacing: -0.04em;
+    color: #f8fafc;
+  }
+
+  p {
+    margin: 6px 0 0;
+    color: #7f8ea3;
+    font-size: 13px;
   }
 }
 
-// Large watermark text behind hero content
-.heroWatermark {
-  position: absolute;
-  top: 50%;
-  left: $spacing-xl;
-  transform: translateY(-50%);
-  font-size: 104px;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  color: var(--text-primary);
-  opacity: 0.04;
-  white-space: nowrap;
-  pointer-events: none;
-  user-select: none;
-  animation: watermarkEnter 0.8s ease-out 0.1s both;
-
-  @media (max-width: $breakpoint-mobile) {
-    font-size: 58px;
-    left: $spacing-lg;
-  }
-}
-
-@keyframes watermarkEnter {
-  from {
-    opacity: 0;
-    transform: translateY(-50%) translateX(-20px);
-  }
-  to {
-    opacity: 0.04;
-    transform: translateY(-50%) translateX(0);
-  }
-}
-
-.heroContent {
-  position: relative;
-  z-index: 1;
+.headerActions {
   display: flex;
-  flex-direction: column;
-  gap: $spacing-xs;
+  align-items: center;
+  gap: 10px;
 }
 
-.heroGreeting {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  color: var(--primary-color);
-  animation: fadeSlideUp 0.5s ease-out 0.1s both;
-}
-
-.heroTitle {
-  margin: 0;
-  font-size: 44px;
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: 0;
-  color: var(--text-primary);
-  animation: fadeSlideUp 0.5s ease-out 0.2s both;
-
-  @media (max-width: $breakpoint-mobile) {
-    font-size: 34px;
-  }
-}
-
-.heroCaring {
-  margin: $spacing-xs 0 0;
-  font-size: 15px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  animation: fadeSlideUp 0.5s ease-out 0.3s both;
-}
-
-// ─── Hero Meta (right side) ─────────────────────────────
-
-.heroMeta {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: $spacing-sm;
-  flex-shrink: 0;
-  animation: fadeSlideUp 0.5s ease-out 0.35s both;
-
-  @media (max-width: $breakpoint-mobile) {
-    align-items: flex-start;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: $spacing-sm;
-  }
-}
-
-.dateTimeBlock {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-
-  @media (max-width: $breakpoint-mobile) {
-    align-items: flex-start;
-  }
-}
-
-.time {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
-  line-height: 1.2;
-}
-
-.date {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-// ─── Connection Pill ────────────────────────────────────
-
-.connectionPill {
+.versionPill,
+.statusPill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border-radius: $radius-full;
-  --glass-blur: 8px;
-  background: var(--glass-bg-secondary);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: var(--glass-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-backdrop-filter);
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.74);
+  color: #9fb2ce;
   font-size: 12px;
+  font-weight: 800;
 }
 
-.statusDot {
+.statusPill::before {
+  content: '';
   width: 8px;
   height: 8px;
-  border-radius: 50%;
-  background: $gray-400;
-  flex-shrink: 0;
-
-  &.connected {
-    background: $success-color;
-    box-shadow: 0 0 6px rgba($success-color, 0.5);
-  }
-
-  &.connecting {
-    background: $warning-color;
-    animation: pulse 1s ease-in-out infinite;
-  }
-
-  &.disconnected {
-    background: $error-color;
-  }
+  border-radius: 999px;
+  background: #64748b;
 }
 
-.pillText {
-  font-weight: 600;
-  color: var(--text-primary);
+.online::before {
+  background: #22c55e;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.7);
 }
 
-.buildDate {
-  font-size: 11px;
-  color: var(--text-tertiary);
-  text-align: right;
-
-  @media (max-width: $breakpoint-mobile) {
-    text-align: left;
-  }
-}
-
-// ─── Bento Stats Grid ───────────────────────────────────
-
-.statsSection {
-  position: relative;
-  z-index: 1;
-}
-
-.sectionHeading {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0;
-  color: var(--text-tertiary);
-  margin: 0 0 $spacing-md;
-}
-
-.bentoGrid {
+.metricGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: auto auto;
-  gap: $spacing-md;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
 
-  @media (max-width: 900px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (max-width: 500px) {
-    grid-template-columns: 1fr;
-  }
+  @media (max-width: 1100px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (max-width: 560px) { grid-template-columns: 1fr; }
 }
 
-.bentoCard {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-md;
-  padding: $spacing-lg;
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--bg-primary) 86%, transparent),
-    color-mix(in srgb, var(--bg-secondary) 72%, transparent)
-  );
-  border: 1px solid color-mix(in srgb, var(--border-color) 66%, transparent);
-  border-radius: $radius-lg;
-  --glass-blur: 12px;
-  backdrop-filter: var(--glass-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-backdrop-filter);
-  box-shadow:
-    0 18px 42px rgb(0 0 0 / 0.12),
-    inset 0 1px 0 rgb(255 255 255 / 0.03);
-  text-decoration: none;
-  transition:
-    border-color $transition-fast,
-    box-shadow $transition-fast,
-    transform $transition-fast;
-  animation: cardEnter 0.4s ease-out both;
-
-  &:hover {
-    border-color: color-mix(in srgb, var(--border-hover) 82%, transparent);
-    box-shadow:
-      0 22px 48px rgb(0 0 0 / 0.16),
-      inset 0 1px 0 rgb(255 255 255 / 0.04);
-    transform: translateY(-2px);
-  }
+.metricCard,
+.trafficPanel,
+.costPanel,
+.recentPanel,
+.linkCard {
+  background: #1b2636;
+  border: 1px solid rgba(137, 157, 184, 0.14);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.2);
 }
 
-// First card spans 2 rows — the "hero stat"
-.bentoLarge {
-  grid-row: 1 / 3;
-  justify-content: center;
-  background: linear-gradient(
-    160deg,
-    color-mix(in srgb, var(--primary-color) 8%, var(--bg-primary)),
-    color-mix(in srgb, var(--bg-primary) 84%, transparent)
-  );
-
-  .bentoValue {
-    font-size: 44px;
-  }
-
-  .bentoIcon {
-    width: 56px;
-    height: 56px;
-  }
-
-  @media (max-width: 900px) {
-    grid-row: auto;
-
-    .bentoValue {
-      font-size: 32px;
-    }
-
-    .bentoIcon {
-      width: 44px;
-      height: 44px;
-    }
-  }
-}
-
-.bentoIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: $radius-md;
-  background: color-mix(in srgb, var(--primary-color) 10%, var(--bg-secondary));
-  color: var(--primary-color);
-  transition: background $transition-fast;
-}
-
-.bentoCard:hover .bentoIcon {
-  background: color-mix(in srgb, var(--primary-color) 16%, var(--bg-secondary));
-}
-
-.bentoContent {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.bentoValue {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
-  line-height: 1.2;
-}
-
-.bentoLabel {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-.bentoSublabel {
-  font-size: 11px;
-  color: var(--text-secondary);
-  opacity: 0.7;
-  margin-top: 2px;
-}
-
-// ─── Config Pills Section ───────────────────────────────
-
-.configSection {
+.metricCard {
   position: relative;
-  z-index: 1;
+  min-height: 118px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: $spacing-md;
-  animation: cardEnter 0.4s ease-out 0.5s both;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
-.configPillGrid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: $spacing-sm;
+.metricIcon {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
 }
 
-.configPill {
-  display: inline-flex;
-  align-items: center;
-  gap: $spacing-sm;
-  padding: 6px 14px;
-  background: color-mix(in srgb, var(--bg-primary) 68%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border-color) 68%, transparent);
-  border-radius: $radius-full;
-  --glass-blur: 10px;
-  backdrop-filter: var(--glass-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-backdrop-filter);
-  font-size: 13px;
-  transition: border-color $transition-fast;
+.blue { color: #3b82f6; background: rgba(37, 99, 235, 0.14); }
+.violet { color: #8b5cf6; background: rgba(124, 58, 237, 0.14); }
+.green { color: #22c55e; background: rgba(34, 197, 94, 0.14); }
+.orange { color: #f97316; background: rgba(249, 115, 22, 0.14); }
 
-  &:hover {
-    border-color: color-mix(in srgb, var(--border-hover) 82%, transparent);
-  }
-}
-
-.configPillWide {
-  flex-basis: 100%;
-  border-radius: $radius-md;
-}
-
-.configPillLabel {
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-.configPillValue {
-  font-weight: 600;
-  color: var(--text-primary);
-
-  &.on {
-    color: $success-color;
-  }
-
-  &.off {
-    color: var(--text-secondary);
-  }
-}
-
-.configPillMono {
-  font-size: 12px;
-  font-family: $font-mono;
-  color: var(--text-secondary);
-  word-break: break-all;
-}
-
-// Config badges (routing strategy)
-.configBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 8px;
-  border-radius: $radius-full;
-  border: 1px solid var(--border-color);
+.metricDelta {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.1);
   font-size: 11px;
-  font-weight: 600;
-  line-height: 1.2;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-weight: 850;
 }
 
-.configBadgeRoundRobin {
-  color: var(--primary-color);
-  border-color: rgba($primary-color, 0.24);
-  background: rgba($primary-color, 0.12);
-}
-
-.configBadgeFillFirst {
-  color: $success-color;
-  border-color: rgba($success-color, 0.3);
-  background: rgba($success-color, 0.12);
-}
-
-.configBadgeUnknown {
-  color: var(--text-secondary);
-  background: var(--bg-primary);
-}
-
-// ─── View More Link ─────────────────────────────────────
-
-.viewMoreLink {
-  display: inline-flex;
-  align-items: center;
+.metricLabel {
+  color: #8ea0b9;
   font-size: 13px;
-  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.metricCard strong {
+  color: #f8fafc;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.analyticsGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(280px, 1fr);
+  gap: 16px;
+
+  @media (max-width: 960px) { grid-template-columns: 1fr; }
+}
+
+.trafficPanel,
+.costPanel,
+.recentPanel {
+  padding: 20px;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+
+  h2 {
+    margin: 0;
+    color: #f8fafc;
+    font-size: 16px;
+    font-weight: 900;
+  }
+
+  p,
+  a {
+    margin: 5px 0 0;
+    color: #8ea0b9;
+    font-size: 12px;
+    text-decoration: none;
+  }
+
+  a { color: #3b82f6; font-weight: 800; }
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border-radius: 9px;
+  background: #111827;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+
+  span {
+    padding: 6px 10px;
+    border-radius: 7px;
+    color: #7f8ea3;
+    font-size: 12px;
+    font-weight: 800;
+
+    &:first-child { color: #e5eefb; background: rgba(255,255,255,0.06); }
+  }
+}
+
+.chartArea {
+  position: relative;
+  height: 250px;
+  margin-top: 22px;
+  overflow: hidden;
+}
+
+.gridLines {
+  position: absolute;
+  inset: 0 0 28px;
+  background: repeating-linear-gradient(to bottom, transparent 0 49px, rgba(148, 163, 184, 0.1) 50px 51px);
+}
+
+.flatLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 40px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1d4ed8, #2f7cff, #1d4ed8);
+  box-shadow: 0 0 14px rgba(47, 124, 255, 0.75);
+}
+
+.timeAxis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  color: #72839b;
+  font-size: 11px;
+  font-family: $font-mono;
+}
+
+.costPanel {
+  min-height: 250px;
+
+  h2 { margin: 0 0 14px; color: #f8fafc; font-size: 16px; }
+  p { color: #8ea0b9; font-size: 13px; }
+}
+
+.linksGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+
+  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 520px) { grid-template-columns: 1fr; }
+}
+
+.linkCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 16px;
+  color: #b7c5d9;
   text-decoration: none;
-  margin-top: $spacing-xs;
-  transition: color $transition-fast;
 
-  &:hover {
-    text-decoration: underline;
-    color: var(--primary-hover);
-  }
+  strong { color: #fff; font-size: 22px; }
 }
 
-// ─── Animations ─────────────────────────────────────────
-
-@keyframes heroEnter {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.tableShell {
+  margin-top: 18px;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
-@keyframes fadeSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.tableHead {
+  display: grid;
+  grid-template-columns: 0.9fr 1.4fr 1fr 1.5fr 1fr 1fr;
+  gap: 14px;
+  padding: 13px 16px;
+  background: #121b2a;
+  color: #8294ad;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-@keyframes cardEnter {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+.emptyState {
+  padding: 34px 16px;
+  color: #7f8ea3;
+  text-align: center;
+  font-size: 13px;
 }
